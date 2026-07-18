@@ -6,8 +6,15 @@ import connectDB from "./configs/db.js";
 import adminRouter from "./routes/adminRoutes.js";
 import blogRouter from "./routes/blogRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import uploadRouter from "./routes/uploadRoutes.js";
 
 const app = express();
+
+// Vercel (and most PaaS platforms) sit in front of the app as a single
+// reverse-proxy hop, setting X-Forwarded-For. Trusting exactly one hop lets
+// Express/express-rate-limit resolve the real client IP instead of the
+// proxy's, without blindly trusting an arbitrary chain of forwarded headers.
+app.set("trust proxy", 1);
 
 await connectDB();
 
@@ -27,6 +34,7 @@ app.get("/", (req, res) => res.send("API is working"));
 app.use("/api/admin", adminRouter);
 app.use("/api/blog", blogRouter);
 app.use("/api/user", userRouter);
+app.use("/api/upload", uploadRouter);
 
 // Central error handler — keeps upload/body-parser failures (e.g. file too
 // large, wrong file type) as clean JSON instead of leaking a stack trace.

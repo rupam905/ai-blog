@@ -1,12 +1,11 @@
-import fs from "fs";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Blog from "../models/Blog.js";
 import Comment from "../models/Comments.js";
-import imagekit from "../configs/imageKit.js";
 import main from "../configs/gemini.js";
 import { sanitizeBlogHtml } from "../utils/sanitize.js";
+import { buildAvatarUrl, buildBlogImageUrl } from "../utils/imageUrl.js";
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -100,30 +99,12 @@ export const getMe = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, bio } = req.body;
+    const { name, bio, avatarPath } = req.body;
     const user = await User.findById(req.user._id);
 
     if (name) user.name = name;
     if (bio !== undefined) user.bio = bio;
-
-    const imageFile = req.file;
-    if (imageFile) {
-      const fileBuffer = fs.readFileSync(imageFile.path);
-      const response = await imagekit.upload({
-        file: fileBuffer,
-        fileName: imageFile.originalname,
-        folder: "/avatars",
-      });
-      fs.unlink(imageFile.path, () => {});
-      user.avatar = imagekit.url({
-        path: response.filePath,
-        transformation: [
-          { quality: "auto" },
-          { format: "webp" },
-          { width: "256", height: "256", cropMode: "extract" },
-        ],
-      });
-    }
+    if (avatarPath) user.avatar = buildAvatarUrl(avatarPath);
 
     await user.save();
     res.json({ success: true, message: "Profile updated", user: toOwnUser(user) });
@@ -257,30 +238,13 @@ export const getMyBlogs = async (req, res) => {
 
 export const createUserBlog = async (req, res) => {
   try {
-    const { title, subTitle, description, category } = JSON.parse(
-      req.body.blog,
-    );
-    const imageFile = req.file;
+    const { title, subTitle, description, category, imagePath } = req.body;
 
-    if (!title || !description || !category || !imageFile) {
+    if (!title || !description || !category || !imagePath) {
       return res.json({ success: false, message: "Missing required fields" });
     }
 
-    const fileBuffer = fs.readFileSync(imageFile.path);
-    const response = await imagekit.upload({
-      file: fileBuffer,
-      fileName: imageFile.originalname,
-      folder: "/blogs",
-    });
-    fs.unlink(imageFile.path, () => {});
-    const image = imagekit.url({
-      path: response.filePath,
-      transformation: [
-        { quality: "auto" },
-        { format: "webp" },
-        { width: "1280" },
-      ],
-    });
+    const image = buildBlogImageUrl(imagePath);
 
     const blog = await Blog.create({
       title,
@@ -301,10 +265,7 @@ export const createUserBlog = async (req, res) => {
 export const updateUserBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, subTitle, description, category } = JSON.parse(
-      req.body.blog,
-    );
-    const imageFile = req.file;
+    const { title, subTitle, description, category, imagePath } = req.body;
 
     const blog = await Blog.findById(id);
     if (!blog) {
@@ -314,22 +275,8 @@ export const updateUserBlog = async (req, res) => {
       return res.json({ success: false, message: "Not authorized" });
     }
 
-    if (imageFile) {
-      const fileBuffer = fs.readFileSync(imageFile.path);
-      const response = await imagekit.upload({
-        file: fileBuffer,
-        fileName: imageFile.originalname,
-        folder: "/blogs",
-      });
-      fs.unlink(imageFile.path, () => {});
-      blog.image = imagekit.url({
-        path: response.filePath,
-        transformation: [
-          { quality: "auto" },
-          { format: "webp" },
-          { width: "1280" },
-        ],
-      });
+    if (imagePath) {
+      blog.image = buildBlogImageUrl(imagePath);
     }
 
     blog.title = title;

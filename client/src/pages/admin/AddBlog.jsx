@@ -5,6 +5,7 @@ import Quill from "quill";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 import { parse } from "marked";
+import { uploadImage } from "../../utils/uploadImage";
 
 const AddBlog = () => {
   const { axios, navigate } = useAppContext();
@@ -47,26 +48,27 @@ const AddBlog = () => {
     try {
       e.preventDefault();
       setIsAdding(true);
+
+      let imagePath;
+      if (image && typeof image !== "string") {
+        imagePath = await uploadImage(axios, image);
+      }
+
       const blog = {
         title,
         subTitle,
         description: quillRef.current.root.innerHTML,
         category,
         isPublished,
+        imagePath,
       };
-
-      const formData = new FormData();
       if (isEditMode) {
         blog.id = blogId;
-      }
-      formData.append("blog", JSON.stringify(blog));
-      if (image) {
-        formData.append("image", image);
       }
 
       const { data } = await axios.post(
         isEditMode ? "/api/blog/update" : "/api/blog/add",
-        formData,
+        blog,
       );
       if (data.success) {
         toast.success(data.message);

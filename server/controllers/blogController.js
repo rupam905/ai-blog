@@ -1,39 +1,19 @@
-import fs from "fs";
-import imagekit from "../configs/imageKit.js";
 import Blog from "../models/Blog.js";
 import Comment from "../models/Comments.js";
 import main from "../configs/gemini.js";
 import { sanitizeBlogHtml } from "../utils/sanitize.js";
+import { buildBlogImageUrl } from "../utils/imageUrl.js";
 
 export const addBlog = async (req, res) => {
   try {
-    const { title, subTitle, description, category, isPublished } = JSON.parse(
-      req.body.blog,
-    );
-    const imageFile = req.file;
+    const { title, subTitle, description, category, isPublished, imagePath } =
+      req.body;
 
-    if (!title || !description || !category || !imageFile) {
+    if (!title || !description || !category || !imagePath) {
       return res.json({ success: false, message: "Missing required fields" });
     }
 
-    const fileBuffer = fs.readFileSync(imageFile.path);
-
-    const response = await imagekit.upload({
-      file: fileBuffer,
-      fileName: imageFile.originalname,
-      folder: "/blogs",
-    });
-    fs.unlink(imageFile.path, () => {});
-
-    const optimizedImageURL = imagekit.url({
-      path: response.filePath,
-      transformation: [
-        { quality: "auto" },
-        { format: "webp" },
-        { width: "1280" },
-      ],
-    });
-    const image = optimizedImageURL;
+    const image = buildBlogImageUrl(imagePath);
 
     await Blog.create({
       title,
@@ -51,9 +31,8 @@ export const addBlog = async (req, res) => {
 
 export const updateBlog = async (req, res) => {
   try {
-    const { id, title, subTitle, description, category, isPublished } =
-      JSON.parse(req.body.blog);
-    const imageFile = req.file;
+    const { id, title, subTitle, description, category, isPublished, imagePath } =
+      req.body;
 
     if (!id || !title || !description || !category) {
       return res.json({ success: false, message: "Missing required fields" });
@@ -65,24 +44,8 @@ export const updateBlog = async (req, res) => {
     }
 
     let image = blog.image;
-    if (imageFile) {
-      const fileBuffer = fs.readFileSync(imageFile.path);
-
-      const response = await imagekit.upload({
-        file: fileBuffer,
-        fileName: imageFile.originalname,
-        folder: "/blogs",
-      });
-      fs.unlink(imageFile.path, () => {});
-
-      image = imagekit.url({
-        path: response.filePath,
-        transformation: [
-          { quality: "auto" },
-          { format: "webp" },
-          { width: "1280" },
-        ],
-      });
+    if (imagePath) {
+      image = buildBlogImageUrl(imagePath);
     }
 
     blog.title = title;

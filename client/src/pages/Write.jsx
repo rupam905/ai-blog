@@ -7,6 +7,7 @@ import Navbar from "../components/Navbar";
 import Loader from "../components/Loader";
 import toast from "react-hot-toast";
 import { parse } from "marked";
+import { uploadImage } from "../utils/uploadImage";
 
 const Write = () => {
   const { axios, navigate, user, authLoading } = useAppContext();
@@ -52,20 +53,23 @@ const Write = () => {
     e.preventDefault();
     try {
       setIsSaving(true);
+
+      let imagePath;
+      if (image && typeof image !== "string") {
+        imagePath = await uploadImage(axios, image);
+      }
+
       const blog = {
         title,
         subTitle,
         description: quillRef.current.root.innerHTML,
         category,
+        imagePath,
       };
 
-      const formData = new FormData();
-      formData.append("blog", JSON.stringify(blog));
-      if (image) formData.append("image", image);
-
       const { data } = isEditMode
-        ? await axios.put(`/api/user/blogs/${blogId}`, formData)
-        : await axios.post("/api/user/blogs", formData);
+        ? await axios.put(`/api/user/blogs/${blogId}`, blog)
+        : await axios.post("/api/user/blogs", blog);
 
       if (data.success) {
         toast.success(isEditMode ? "Post updated" : "Post published!");

@@ -9,6 +9,7 @@ import Loader from "../components/Loader";
 import { Avatar, VerifiedBadge } from "../components/Avatar";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
+import { uploadImage } from "../utils/uploadImage";
 
 const Profile = () => {
   const { id } = useParams();
@@ -98,12 +99,17 @@ const Profile = () => {
     e.preventDefault();
     try {
       setSaving(true);
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("bio", bio);
-      if (avatarFile) formData.append("avatar", avatarFile);
 
-      const { data } = await axios.put("/api/user/profile", formData);
+      let avatarPath;
+      if (avatarFile) {
+        avatarPath = await uploadImage(axios, avatarFile);
+      }
+
+      const { data } = await axios.put("/api/user/profile", {
+        name,
+        bio,
+        avatarPath,
+      });
       if (data.success) {
         setUser(data.user);
         setProfile((p) => ({ ...p, ...data.user }));
