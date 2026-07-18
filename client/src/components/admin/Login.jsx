@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useAppContext } from "../../context/AppContext";
+import { assets } from "../../assets/assets";
 import toast from "react-hot-toast";
 
 const Login = () => {
   const {axios, setToken} = useAppContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const {data} = await axios.post('/api/admin/login', {email,password})
       if (data.success) {
         setToken(data.token)
@@ -21,53 +24,57 @@ const Login = () => {
       }
     } catch (error) {
       toast.error(error.message)
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="w-full max-w-sm p-6 max-md:m-6 border border-primary/30 shadow-xl shadow-primary/15 rounded-lg">
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-full py-6 text-center">
-            <h1 className="text-3xl font-bold">
-              <span className="text-primary">Admin</span> Login
-            </h1>
-            <p className="font-light">
-              Enter your credentials to access the admin panel
-            </p>
-          </div>
-          <form
-            onSubmit={handleSubmit}
-            className="mt-6 w-full sm:max-w-md text-gray-600">
-            <div className="flex flex-col">
-              <label>Email</label>
-              <input
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-                type="email"
-                required
-                placeholder="your email id"
-                className="border-b-2 border-gray-300 p-2 outline-none mb-6"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label>Password</label>
-              <input
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-                type="password"
-                required
-                placeholder="your password"
-                className="border-b-2 border-gray-300 p-2 outline-none mb-6"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-3 font-medium bg-primary text-white rounded cursor-pointer hover:bg-primary/90 transition-all">
-              Login
-            </button>
-          </form>
+    <div className="flex items-center justify-center min-h-screen bg-paper px-4">
+      <div className="w-full max-w-sm p-8 border border-ink/10 bg-white rounded-3xl shadow-sm">
+        <div className="flex flex-col items-center text-center mb-6">
+          <img src={assets.logo} alt="" className="w-32 mb-6" />
+          <h1 className="font-serif text-2xl text-ink">Admin Login</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Enter your credentials to access the dashboard
+          </p>
         </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="admin-email" className="block text-sm text-gray-600 mb-1.5">
+              Email
+            </label>
+            <input
+              id="admin-email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+              type="email"
+              required
+              placeholder="you@example.com"
+              className="w-full p-3 border border-ink/15 rounded-xl outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
+            />
+          </div>
+          <div>
+            <label htmlFor="admin-password" className="block text-sm text-gray-600 mb-1.5">
+              Password
+            </label>
+            <input
+              id="admin-password"
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+              type="password"
+              required
+              placeholder="••••••••"
+              className="w-full p-3 border border-ink/15 rounded-xl outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 w-full py-3 font-medium text-sm bg-primary text-white rounded-full hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60 cursor-pointer">
+            {loading ? "Signing in..." : "Login"}
+          </button>
+        </form>
       </div>
     </div>
   );

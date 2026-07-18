@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 const commentSchema = new mongoose.Schema(
   {
     blog: { type: mongoose.Schema.Types.ObjectId, ref: "blog", required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     name: { type: String, required: true },
     content: { type: String, required: true },
-    isApproved: { type: Boolean, default: false },
+    isApproved: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

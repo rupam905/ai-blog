@@ -1,15 +1,21 @@
 import toast from "react-hot-toast";
-import { assets } from "../../assets/assets";
+import { Trash2 } from "lucide-react";
+import { VerifiedBadge } from "../Avatar";
 import { useAppContext } from "../../context/AppContext";
 
 const BlogTableItem = ({ blog, fetchBlogs, index }) => {
-  const { title, createdAt } = blog;
+  const { title, createdAt, author } = blog;
   const BlogDate = new Date(createdAt);
 
-  const { axios } = useAppContext();
+  const { axios, navigate, confirm } = useAppContext();
   const deleteBlog = async () => {
-    const confirm = window.confirm("Are u sure u want to delete this blog?");
-    if (!confirm) return;
+    const ok = await confirm({
+      title: "Delete this blog?",
+      message: "This will permanently delete the post and its comments. This can't be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const { data } = await axios.post("/api/blog/delete", { id: blog._id });
       if (data.success) {
@@ -35,35 +41,53 @@ const BlogTableItem = ({ blog, fetchBlogs, index }) => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(data.message);
+      toast.error(error.message);
     }
   };
 
   return (
-    <tr className="border-y border-gray-300">
-      <th className="px-2 py-4">{index}</th>
-      <td className="px-2 py-4">{title}</td>
+    <tr className="border-b border-ink/10 last:border-b-0 hover:bg-gray-50/60 transition-colors">
+      <th className="px-4 py-4 xl:px-6 font-normal text-gray-400">{index}</th>
+      <td className="px-2 py-4">
+        <p className="text-ink font-medium">{title}</p>
+        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+          {author?.name || "QuickBlog Team"}
+          {author?.isVerified && <VerifiedBadge className="w-3 h-3" />}
+        </span>
+      </td>
       <td className="px-2 py-4 max-sm:hidden">{BlogDate.toDateString()}</td>
       <td className="px-2 py-4 max-sm:hidden">
-        <p
-          className={`${
-            blog.isPublished ? "text-green-600" : "text-orange-700"
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            blog.isPublished ? "text-green-600" : "text-orange-600"
           }`}>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              blog.isPublished ? "bg-green-600" : "bg-orange-600"
+            }`}
+          />
           {blog.isPublished ? "Published" : "Unpublished"}
-        </p>
+        </span>
       </td>
-      <td className="px-2 py-4 flex text-xs gap-3">
-        <button
-          onClick={togglePublish}
-          className="border px-2 py-0.5 mt-1 rounded cursor-pointer">
-          {blog.isPublished ? "Unpublish" : "Publish"}
-        </button>
-        <img
-          src={assets.cross_icon}
-          className="w-8 hover:scale-110 transition-all cursor-pointer"
-          alt=""
-          onClick={deleteBlog}
-        />
+      <td className="px-2 py-4">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={togglePublish}
+            className="text-xs font-medium px-3 py-1.5 rounded-full border border-ink/15 text-ink hover:bg-ink hover:text-white transition-colors cursor-pointer">
+            {blog.isPublished ? "Unpublish" : "Publish"}
+          </button>
+          <button
+            onClick={() => navigate(`/admin/editBlog/${blog._id}`)}
+            className="text-xs font-medium px-3 py-1.5 rounded-full border border-ink/15 text-ink hover:bg-ink hover:text-white transition-colors cursor-pointer">
+            Edit
+          </button>
+          <button
+            onClick={deleteBlog}
+            aria-label="Delete blog"
+            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </td>
     </tr>
   );

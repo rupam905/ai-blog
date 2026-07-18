@@ -7,20 +7,26 @@ import {
   getAllBlogs,
   getBlogById,
   getBlogComments,
+  toggleLike,
   togglePublish,
+  updateBlog,
 } from "../controllers/blogController.js";
 import upload from "../middlewares/multer.js";
 import auth from "../middlewares/auth.js";
+import userAuth from "../middlewares/userAuth.js";
+import { commentLimiter, generateLimiter } from "../middlewares/rateLimit.js";
 
 const blogRouter = express.Router();
 
 blogRouter.post("/add", upload.single("image"), auth, addBlog);
+blogRouter.post("/update", upload.single("image"), auth, updateBlog);
 blogRouter.get("/all", getAllBlogs);
 blogRouter.get("/:blogId", getBlogById);
 blogRouter.post("/delete",auth, deleteBlogById);
 blogRouter.post("/toggle-publish",auth, togglePublish);
-blogRouter.post("/add-comment", addComment);
+blogRouter.post("/add-comment", commentLimiter, userAuth, addComment);
 blogRouter.post("/comments", getBlogComments);
-blogRouter.post("/generate", auth, generateContent);
+blogRouter.post("/generate", generateLimiter, auth, generateContent);
+blogRouter.post("/:blogId/like", userAuth, toggleLike);
 
 export default blogRouter;

@@ -1,0 +1,15 @@
+{
+  "name": "ai-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Blog - React + Express blogging platform",
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "server": "npm run server --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently -n server,client -c blue,green \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
