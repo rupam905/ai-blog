@@ -59,6 +59,10 @@ const Blog = () => {
 
   const addComment = async (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please write a comment before posting");
+      return;
+    }
     try {
       setSubmitting(true);
       const { data } = await axios.post("/api/blog/add-comment", {
@@ -283,7 +287,7 @@ const Blog = () => {
             {user ? (
               <>
                 <p className="font-serif text-xl text-ink mb-6">Add your comment</p>
-                <form onSubmit={addComment} className="flex flex-col gap-4 max-w-lg">
+                <form onSubmit={addComment} noValidate className="flex flex-col gap-4 max-w-lg">
                   <div>
                     <label htmlFor="comment-content" className="block text-sm text-gray-600 mb-1.5">
                       Comment as {user.name}

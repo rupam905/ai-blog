@@ -11,6 +11,10 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please fill in all fields correctly");
+      return;
+    }
     try {
       setLoading(true);
       const {data} = await axios.post('/api/admin/login', {email,password})
@@ -39,7 +43,7 @@ const Login = () => {
             Enter your credentials to access the dashboard
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <div>
             <label htmlFor="admin-email" className="block text-sm text-gray-600 mb-1.5">
               Email

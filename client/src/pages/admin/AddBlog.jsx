@@ -47,6 +47,10 @@ const AddBlog = () => {
   const onSubmitHandler = async (e) => {
     try {
       e.preventDefault();
+      if (!e.currentTarget.checkValidity()) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
       setIsAdding(true);
 
       let imagePath;
@@ -126,7 +130,7 @@ const AddBlog = () => {
   }, [isEditMode, blogId, axios]);
 
   return (
-    <form onSubmit={onSubmitHandler} className="flex-1 h-full overflow-scroll">
+    <form onSubmit={onSubmitHandler} noValidate className="flex-1 h-full overflow-scroll">
       <div className="p-4 md:p-10">
         <h1 className="font-serif text-2xl text-ink mb-6">
           {isEditMode ? "Edit Blog" : "Add Blog"}

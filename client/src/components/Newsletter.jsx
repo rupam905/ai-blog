@@ -7,6 +7,10 @@ const Newsletter = () => {
 
   const onSubmitHandler = (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please enter a valid email");
+      return;
+    }
     setLoading(true);
     setTimeout(() => {
       toast.success("Thanks for subscribing!");
@@ -30,6 +34,7 @@ const Newsletter = () => {
         </p>
         <form
           onSubmit={onSubmitHandler}
+          noValidate
           className="flex items-center max-w-md mx-auto bg-white/5 border border-white/15 rounded-full p-1 focus-within:ring-2 focus-within:ring-primary/50 transition-shadow">
           <input
             ref={inputRef}

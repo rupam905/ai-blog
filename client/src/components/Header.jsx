@@ -64,7 +64,6 @@ const Header = () => {
                 id="search-blogs"
                 type="text"
                 placeholder="Search stories, topics..."
-                required
                 className="w-full px-3 py-3 text-sm outline-none bg-transparent"
               />
               <button

@@ -15,6 +15,10 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please fill in all fields correctly");
+      return;
+    }
     try {
       setLoading(true);
       const data = isLogin
@@ -53,7 +57,7 @@ const Auth = () => {
               : "Create an account to start writing"}
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           {!isLogin && (
             <div>
               <label htmlFor="auth-name" className="block text-sm text-gray-600 mb-1.5">

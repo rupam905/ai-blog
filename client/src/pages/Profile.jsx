@@ -97,6 +97,10 @@ const Profile = () => {
 
   const saveProfile = async (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
     try {
       setSaving(true);
 
@@ -201,6 +205,7 @@ const Profile = () => {
         {editing && isOwnProfile && (
           <form
             onSubmit={saveProfile}
+            noValidate
             className="mt-8 p-6 border border-ink/10 rounded-2xl bg-gray-50 flex flex-col gap-4 max-w-lg">
             <div>
               <p className="text-sm text-gray-600 mb-1.5">Avatar</p>

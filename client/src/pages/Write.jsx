@@ -51,6 +51,10 @@ const Write = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    if (!e.currentTarget.checkValidity()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
     try {
       setIsSaving(true);
 
@@ -120,7 +124,7 @@ const Write = () => {
   return (
     <div className="min-h-screen bg-paper">
       <Navbar />
-      <form onSubmit={onSubmitHandler} className="max-w-3xl mx-auto p-4 md:p-10">
+      <form onSubmit={onSubmitHandler} noValidate className="max-w-3xl mx-auto p-4 md:p-10">
         <h1 className="font-serif text-2xl text-ink mb-6">
           {isEditMode ? "Edit post" : "Write a new post"}
         </h1>
